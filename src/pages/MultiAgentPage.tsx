@@ -140,8 +140,8 @@ const MultiAgentPage = () => {
       {finalResult && (
         <div className="mt-8 rounded-lg border border-primary/30 bg-card p-6 gradient-bg-subtle">
           <h2 className="text-xl font-semibold mb-4">Final Combined Solution</h2>
-          <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap">
-            {finalResult}
+          <div className="prose prose-invert prose-sm max-w-none text-foreground">
+            <ReactMarkdown>{finalResult}</ReactMarkdown>
           </div>
         </div>
       )}
