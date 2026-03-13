@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Layers, Play, CheckCircle } from "lucide-react";
+import { Layers, Play, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -78,59 +78,84 @@ const MultiAgentPage = () => {
 
   return (
     <div className="p-8 max-w-4xl">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-2">
-        <Layers className="h-8 w-8 text-primary" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-bg shadow-lg shadow-primary/20">
+          <Layers className="h-5 w-5 text-white" />
+        </div>
         <h1 className="text-3xl font-bold">
           Multi-Agent <span className="gradient-text">Collaboration</span>
         </h1>
       </div>
-      <p className="text-muted-foreground">
+      <p className="text-muted-foreground mb-8 ml-[52px]">
         Enter a complex task and multiple AI agents will collaborate to solve it.
       </p>
 
-      <div className="mt-8 rounded-lg border border-border bg-card p-6">
+      {/* Task input */}
+      <div className="rounded-xl border border-border bg-card p-6 mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Your Task</h2>
         <Textarea
           placeholder='Enter a complex task (e.g. "Start a new startup business")'
-          className="min-h-[100px] bg-secondary border-border resize-none"
+          className="min-h-[100px] rounded-lg bg-secondary/80 border-border resize-none focus:ring-2 focus:ring-primary/20"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           maxLength={2000}
         />
         <Button
-          className="mt-4 gradient-bg border-0 text-primary-foreground hover:opacity-90"
+          className="mt-4 rounded-lg gradient-bg border-0 text-primary-foreground glow-btn"
           onClick={runMultiAgent}
           disabled={isRunning}
         >
-          <Play size={16} className="mr-2" />
-          {isRunning ? "Running Agents..." : "Run Multi-Agent Task"}
+          {isRunning ? (
+            <span className="flex items-center gap-2">
+              <Loader2 size={15} className="animate-spin" />
+              Running Agents...
+            </span>
+          ) : (
+            <>
+              <Play size={15} className="mr-2" />
+              Run Multi-Agent Task
+            </>
+          )}
         </Button>
       </div>
 
       {/* Agent Progress */}
-      <div className="mt-8 space-y-4">
+      <div className="space-y-3 mb-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Agent Pipeline</h2>
         {agents.map((agent, i) => (
           <div
             key={i}
-            className={`rounded-lg border bg-card p-5 transition-all ${
+            className={`rounded-xl border bg-card p-5 transition-all duration-300 ${
               agent.status === "running"
-                ? "border-primary animate-pulse"
+                ? "border-primary/40 shadow-md shadow-primary/10"
                 : agent.status === "done"
-                ? "border-border"
-                : "border-border opacity-60"
+                ? "border-emerald-500/20"
+                : "border-border opacity-50"
             }`}
           >
             <div className="flex items-center gap-3">
               <span className="text-2xl">{agent.icon}</span>
-              <span className="font-semibold text-foreground">{agent.name}</span>
+              <div className="flex-1">
+                <span className="font-semibold text-foreground">{agent.name}</span>
+                {agent.status === "pending" && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Waiting...</p>
+                )}
+              </div>
               {agent.status === "running" && (
-                <span className="ml-auto text-sm text-primary">Processing...</span>
+                <span className="flex items-center gap-1.5 text-sm text-primary">
+                  <Loader2 size={13} className="animate-spin" />
+                  Processing...
+                </span>
               )}
               {agent.status === "done" && (
-                <CheckCircle size={18} className="ml-auto text-emerald-400" />
+                <CheckCircle size={18} className="text-emerald-400" />
               )}
             </div>
             {agent.result && (
-              <p className="mt-3 text-sm text-muted-foreground">{agent.result}</p>
+              <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed border-t border-border/50 pt-3">
+                {agent.result}
+              </p>
             )}
           </div>
         ))}
@@ -138,8 +163,8 @@ const MultiAgentPage = () => {
 
       {/* Final Result */}
       {finalResult && (
-        <div className="mt-8 rounded-lg border border-primary/30 bg-card p-6 gradient-bg-subtle">
-          <h2 className="text-xl font-semibold mb-4">Final Combined Solution</h2>
+        <div className="rounded-xl border border-primary/20 bg-card p-6 gradient-bg-subtle">
+          <h2 className="text-lg font-semibold mb-4 gradient-text">Final Combined Solution</h2>
           <div className="prose prose-invert prose-sm max-w-none text-foreground">
             <ReactMarkdown>{finalResult}</ReactMarkdown>
           </div>

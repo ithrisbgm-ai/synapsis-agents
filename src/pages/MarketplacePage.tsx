@@ -41,65 +41,83 @@ const MarketplacePage = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold">AI Agents <span className="gradient-text">Marketplace</span></h1>
-      <p className="mt-2 text-muted-foreground">Browse and discover AI agents for every need</p>
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">
+          AI Agents <span className="gradient-text">Marketplace</span>
+        </h1>
+        <p className="mt-2 text-muted-foreground">Browse and discover AI agents for every need</p>
+      </div>
 
       {/* Search & Filters */}
-      <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search agents..."
-            className="h-11 pl-11 bg-secondary border-border"
-            value={query}
-            onChange={(e) => handleSearch(e.target.value)}
-            maxLength={200}
-          />
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search agents..."
+              className="h-11 pl-11 rounded-lg bg-secondary/80 border-border focus:ring-2 focus:ring-primary/20"
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              maxLength={200}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={15} className="text-muted-foreground shrink-0" />
+            {RATING_FILTERS.map((f) => (
+              <Button
+                key={f.value}
+                size="sm"
+                variant={minRating === f.value ? "default" : "outline"}
+                className={`rounded-lg text-xs ${
+                  minRating === f.value
+                    ? "gradient-bg border-0 text-primary-foreground"
+                    : "border-border/60 hover:border-primary/30"
+                }`}
+                onClick={() => setMinRating(f.value)}
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-muted-foreground" />
-          {RATING_FILTERS.map((f) => (
+
+        {/* Category tabs */}
+        <div className="flex flex-wrap gap-2 pt-1">
+          {ALL_CATEGORIES.map((cat) => (
             <Button
-              key={f.value}
+              key={cat}
               size="sm"
-              variant={minRating === f.value ? "default" : "outline"}
-              className={minRating === f.value ? "gradient-bg border-0 text-primary-foreground" : ""}
-              onClick={() => setMinRating(f.value)}
+              variant={category === cat ? "default" : "outline"}
+              className={`rounded-lg text-xs ${
+                category === cat
+                  ? "gradient-bg border-0 text-primary-foreground"
+                  : "border-border/60 hover:border-primary/30 text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => {
+                setCategory(cat);
+                const params = new URLSearchParams();
+                if (query) params.set("q", query);
+                if (cat !== "all") params.set("category", cat);
+                setSearchParams(params, { replace: true });
+              }}
             >
-              {f.label}
+              {cat === "all" ? "All" : CATEGORY_LABELS[cat]}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Category tabs */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {ALL_CATEGORIES.map((cat) => (
-          <Button
-            key={cat}
-            size="sm"
-            variant={category === cat ? "default" : "outline"}
-            className={category === cat ? "gradient-bg border-0 text-primary-foreground" : ""}
-            onClick={() => {
-              setCategory(cat);
-              const params = new URLSearchParams();
-              if (query) params.set("q", query);
-              if (cat !== "all") params.set("category", cat);
-              setSearchParams(params, { replace: true });
-            }}
-          >
-            {cat === "all" ? "All" : CATEGORY_LABELS[cat]}
-          </Button>
-        ))}
-      </div>
-
       {/* Results */}
       <div className="mt-8">
-        <p className="text-sm text-muted-foreground mb-4">{agents.length} agent{agents.length !== 1 ? "s" : ""} found</p>
+        <p className="text-sm text-muted-foreground mb-5 font-medium">
+          {agents.length} agent{agents.length !== 1 ? "s" : ""} found
+        </p>
         {agents.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-12 text-center">
-            <p className="text-lg font-medium text-foreground">No agents found</p>
-            <p className="mt-2 text-muted-foreground">Try adjusting your search or filters</p>
+          <div className="rounded-xl border border-border bg-card p-16 text-center">
+            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-lg font-semibold text-foreground">No agents found</p>
+            <p className="mt-2 text-muted-foreground text-sm">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
