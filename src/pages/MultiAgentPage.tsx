@@ -3,18 +3,21 @@ import { Layers, Play, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { streamAgentResponse } from "@/lib/stream-chat";
+import ReactMarkdown from "react-markdown";
 
 interface AgentResult {
   name: string;
   icon: string;
+  promptTemplate: string;
   status: "pending" | "running" | "done";
   result: string;
 }
 
 const MULTI_AGENTS: AgentResult[] = [
-  { name: "Research Agent", icon: "🔬", status: "pending", result: "" },
-  { name: "Finance Agent", icon: "💰", status: "pending", result: "" },
-  { name: "Marketing Agent", icon: "📣", status: "pending", result: "" },
+  { name: "Research Agent", icon: "🔬", promptTemplate: "You are a research analyst. Provide thorough research and analysis for: {input}", status: "pending", result: "" },
+  { name: "Finance Agent", icon: "💰", promptTemplate: "You are a financial advisor. Provide financial analysis, budgeting, and funding strategies for: {input}", status: "pending", result: "" },
+  { name: "Marketing Agent", icon: "📣", promptTemplate: "You are a marketing strategist. Create a marketing plan and strategy for: {input}", status: "pending", result: "" },
 ];
 
 const MultiAgentPage = () => {
@@ -30,27 +33,45 @@ const MultiAgentPage = () => {
     }
     setIsRunning(true);
     setFinalResult("");
-    setAgents(MULTI_AGENTS.map((a) => ({ ...a, status: "pending", result: "" })));
+    const freshAgents = MULTI_AGENTS.map((a) => ({ ...a, status: "pending" as const, result: "" }));
+    setAgents(freshAgents);
 
-    for (let i = 0; i < MULTI_AGENTS.length; i++) {
+    const results: string[] = [];
+
+    for (let i = 0; i < freshAgents.length; i++) {
       setAgents((prev) =>
-        prev.map((a, idx) => (idx === i ? { ...a, status: "running" } : a))
+        prev.map((a, idx) => (idx === i ? { ...a, status: "running" as const } : a))
       );
-      await new Promise((r) => setTimeout(r, 1200));
-      const result = `Analysis from ${MULTI_AGENTS[i].name} for task: "${task}". This is a simulated response. Connect Lovable Cloud to get real AI-powered results.`;
-      setAgents((prev) =>
-        prev.map((a, idx) => (idx === i ? { ...a, status: "done", result } : a))
-      );
+
+      let agentResult = "";
+      await streamAgentResponse({
+        prompt: task,
+        promptTemplate: freshAgents[i].promptTemplate,
+        agentName: freshAgents[i].name,
+        onDelta: (text) => {
+          agentResult += text;
+          setAgents((prev) =>
+            prev.map((a, idx) => (idx === i ? { ...a, result: agentResult } : a))
+          );
+        },
+        onDone: () => {
+          setAgents((prev) =>
+            prev.map((a, idx) => (idx === i ? { ...a, status: "done" as const } : a))
+          );
+        },
+        onError: (error) => {
+          toast.error(`${freshAgents[i].name}: ${error}`);
+          setAgents((prev) =>
+            prev.map((a, idx) => (idx === i ? { ...a, status: "done" as const, result: `Error: ${error}` } : a))
+          );
+        },
+      });
+      results.push(agentResult);
     }
 
-    await new Promise((r) => setTimeout(r, 800));
     setFinalResult(
-      `## Combined Multi-Agent Solution\n\n` +
-      `**Task:** ${task}\n\n` +
-      `Three specialized agents analyzed your request and produced a comprehensive solution.\n\n` +
-      `In production, each agent would use Lovable AI to generate domain-specific insights, ` +
-      `then a coordinator agent would synthesize the results into a unified plan.\n\n` +
-      `*Enable Lovable Cloud to power real multi-agent collaboration.*`
+      `## Combined Multi-Agent Solution\n\n**Task:** ${task}\n\n` +
+      results.map((r, i) => `### ${freshAgents[i].icon} ${freshAgents[i].name}\n\n${r}`).join("\n\n---\n\n")
     );
     setIsRunning(false);
   };
@@ -119,8 +140,8 @@ const MultiAgentPage = () => {
       {finalResult && (
         <div className="mt-8 rounded-lg border border-primary/30 bg-card p-6 gradient-bg-subtle">
           <h2 className="text-xl font-semibold mb-4">Final Combined Solution</h2>
-          <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap">
-            {finalResult}
+          <div className="prose prose-invert prose-sm max-w-none text-foreground">
+            <ReactMarkdown>{finalResult}</ReactMarkdown>
           </div>
         </div>
       )}

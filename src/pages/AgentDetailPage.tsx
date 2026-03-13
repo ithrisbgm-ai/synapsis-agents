@@ -8,6 +8,8 @@ import { getAgentById } from "@/lib/agents-data";
 import { CATEGORY_LABELS } from "@/lib/types";
 import StarRating from "@/components/StarRating";
 import { toast } from "sonner";
+import { streamAgentResponse } from "@/lib/stream-chat";
+import ReactMarkdown from "react-markdown";
 
 const AgentDetailPage = () => {
   const { id } = useParams();
@@ -37,16 +39,17 @@ const AgentDetailPage = () => {
     setIsRunning(true);
     setResponse("");
 
-    // Simulate AI response (will be replaced with real API call when Cloud is enabled)
-    await new Promise((r) => setTimeout(r, 1500));
-    setResponse(
-      `## ${agent.name} Response\n\nBased on your request: "${prompt}"\n\n` +
-      `Here is a generated response from the ${agent.name}. ` +
-      `In a production environment, this would call the AI API with the agent's prompt template to generate a real response.\n\n` +
-      `**Agent template:** ${agent.prompt_template.replace("{input}", prompt)}\n\n` +
-      `*Connect Lovable Cloud to enable real AI responses powered by Lovable AI.*`
-    );
-    setIsRunning(false);
+    await streamAgentResponse({
+      prompt,
+      promptTemplate: agent.prompt_template,
+      agentName: agent.name,
+      onDelta: (text) => setResponse((prev) => prev + text),
+      onDone: () => setIsRunning(false),
+      onError: (error) => {
+        toast.error(error);
+        setIsRunning(false);
+      },
+    });
   };
 
   const handleRate = (rating: number) => {
@@ -106,8 +109,8 @@ const AgentDetailPage = () => {
         {response && (
           <div className="mt-6 rounded-lg border border-border bg-background p-5">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">AI Response</h3>
-            <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap">
-              {response}
+            <div className="prose prose-invert prose-sm max-w-none text-foreground">
+              <ReactMarkdown>{response}</ReactMarkdown>
             </div>
           </div>
         )}
