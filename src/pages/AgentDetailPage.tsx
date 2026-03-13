@@ -8,6 +8,8 @@ import { getAgentById } from "@/lib/agents-data";
 import { CATEGORY_LABELS } from "@/lib/types";
 import StarRating from "@/components/StarRating";
 import { toast } from "sonner";
+import { streamAgentResponse } from "@/lib/stream-chat";
+import ReactMarkdown from "react-markdown";
 
 const AgentDetailPage = () => {
   const { id } = useParams();
