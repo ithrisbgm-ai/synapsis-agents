@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AgentCard from "@/components/AgentCard";
@@ -41,65 +41,87 @@ const MarketplacePage = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold">AI Agents <span className="gradient-text">Marketplace</span></h1>
-      <p className="mt-2 text-muted-foreground">Browse and discover AI agents for every need</p>
+      {/* Page Header */}
+      <div className="flex items-center gap-3 mb-1">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-bg shadow-md shadow-primary/20">
+          <Store size={17} className="text-white" />
+        </div>
+        <h1 className="text-3xl font-bold">
+          AI Agents <span className="gradient-text">Marketplace</span>
+        </h1>
+      </div>
+      <p className="mt-1.5 text-muted-foreground ml-12">Browse and discover AI agents for every need</p>
 
       {/* Search & Filters */}
-      <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search agents..."
-            className="h-11 pl-11 bg-secondary border-border"
-            value={query}
-            onChange={(e) => handleSearch(e.target.value)}
-            maxLength={200}
-          />
+      <div className="mt-7 rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search agents..."
+              className="h-10 pl-11 bg-secondary/60 border-border/70 rounded-xl focus-visible:ring-primary/40 focus-visible:border-primary/40"
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              maxLength={200}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={15} className="text-muted-foreground shrink-0" />
+            {RATING_FILTERS.map((f) => (
+              <Button
+                key={f.value}
+                size="sm"
+                variant={minRating === f.value ? "default" : "outline"}
+                className={`rounded-lg text-xs h-8 ${
+                  minRating === f.value
+                    ? "gradient-bg border-0 text-white shadow-sm shadow-primary/20"
+                    : "border-border/70 hover:border-primary/30"
+                }`}
+                onClick={() => setMinRating(f.value)}
+              >
+                {f.label}
+              </Button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-muted-foreground" />
-          {RATING_FILTERS.map((f) => (
+
+        {/* Category tabs */}
+        <div className="flex flex-wrap gap-2 pt-1 border-t border-border/50">
+          {ALL_CATEGORIES.map((cat) => (
             <Button
-              key={f.value}
+              key={cat}
               size="sm"
-              variant={minRating === f.value ? "default" : "outline"}
-              className={minRating === f.value ? "gradient-bg border-0 text-primary-foreground" : ""}
-              onClick={() => setMinRating(f.value)}
+              variant={category === cat ? "default" : "outline"}
+              className={`rounded-lg text-xs h-8 ${
+                category === cat
+                  ? "gradient-bg border-0 text-white shadow-sm shadow-primary/20"
+                  : "border-border/70 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+              }`}
+              onClick={() => {
+                setCategory(cat);
+                const params = new URLSearchParams();
+                if (query) params.set("q", query);
+                if (cat !== "all") params.set("category", cat);
+                setSearchParams(params, { replace: true });
+              }}
             >
-              {f.label}
+              {cat === "all" ? "All Categories" : CATEGORY_LABELS[cat]}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Category tabs */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {ALL_CATEGORIES.map((cat) => (
-          <Button
-            key={cat}
-            size="sm"
-            variant={category === cat ? "default" : "outline"}
-            className={category === cat ? "gradient-bg border-0 text-primary-foreground" : ""}
-            onClick={() => {
-              setCategory(cat);
-              const params = new URLSearchParams();
-              if (query) params.set("q", query);
-              if (cat !== "all") params.set("category", cat);
-              setSearchParams(params, { replace: true });
-            }}
-          >
-            {cat === "all" ? "All" : CATEGORY_LABELS[cat]}
-          </Button>
-        ))}
-      </div>
-
       {/* Results */}
-      <div className="mt-8">
-        <p className="text-sm text-muted-foreground mb-4">{agents.length} agent{agents.length !== 1 ? "s" : ""} found</p>
+      <div className="mt-6">
+        <p className="text-sm text-muted-foreground mb-4">
+          <span className="font-semibold text-foreground">{agents.length}</span>{" "}
+          agent{agents.length !== 1 ? "s" : ""} found
+        </p>
         {agents.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-12 text-center">
-            <p className="text-lg font-medium text-foreground">No agents found</p>
-            <p className="mt-2 text-muted-foreground">Try adjusting your search or filters</p>
+          <div className="rounded-xl border border-border bg-card p-14 text-center">
+            <div className="text-4xl mb-4">🔍</div>
+            <p className="text-lg font-semibold text-foreground">No agents found</p>
+            <p className="mt-2 text-muted-foreground text-sm">Try adjusting your search or filters</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
