@@ -109,8 +109,8 @@ const AgentDetailPage = () => {
         {response && (
           <div className="mt-6 rounded-lg border border-border bg-background p-5">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">AI Response</h3>
-            <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap">
-              {response}
+            <div className="prose prose-invert prose-sm max-w-none text-foreground">
+              <ReactMarkdown>{response}</ReactMarkdown>
             </div>
           </div>
         )}
