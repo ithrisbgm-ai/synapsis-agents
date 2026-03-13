@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code2, Plus } from "lucide-react";
+import { Code2, Plus, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,21 +43,34 @@ const DeveloperPage = () => {
 
   return (
     <div className="p-8 max-w-3xl">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-2">
-        <Code2 className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">
-          Developer <span className="gradient-text">Dashboard</span>
-        </h1>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-bg shadow-lg shadow-primary/25">
+          <Code2 className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold">
+            Developer <span className="gradient-text">Dashboard</span>
+          </h1>
+          <p className="text-sm text-muted-foreground">Submit your AI agent to the marketplace</p>
+        </div>
       </div>
-      <p className="text-muted-foreground">Submit your AI agent to the marketplace</p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        <div className="rounded-lg border border-border bg-card p-6 space-y-5">
+      {/* Info banner */}
+      <div className="mt-6 rounded-2xl border border-primary/20 gradient-bg-subtle p-4 flex items-start gap-3">
+        <Lightbulb size={16} className="text-primary mt-0.5 shrink-0" />
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Create powerful AI agents by defining a clear system prompt. Use <code className="text-primary bg-secondary px-1 rounded text-xs">{"{input}"}</code> as placeholder for the user's input.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Agent Name</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">Agent Name</label>
             <Input
               placeholder="e.g. Resume Builder AI"
-              className="bg-secondary border-border"
+              className="bg-secondary border-border rounded-xl focus-visible:ring-primary/50"
               value={formData.name}
               onChange={(e) => update("name", e.target.value)}
               maxLength={100}
@@ -65,10 +78,10 @@ const DeveloperPage = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Description</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">Description</label>
             <Textarea
               placeholder="Describe what your agent does..."
-              className="bg-secondary border-border resize-none"
+              className="bg-secondary border-border resize-none rounded-xl focus-visible:ring-primary/50"
               rows={3}
               value={formData.description}
               onChange={(e) => update("description", e.target.value)}
@@ -77,28 +90,30 @@ const DeveloperPage = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Category</label>
+            <label className="text-sm font-semibold text-foreground mb-2 block">Category</label>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((cat) => (
-                <Button
+                <button
                   key={cat}
                   type="button"
-                  size="sm"
-                  variant={formData.category === cat ? "default" : "outline"}
-                  className={formData.category === cat ? "gradient-bg border-0 text-primary-foreground" : ""}
                   onClick={() => update("category", cat)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                    formData.category === cat
+                      ? "gradient-bg text-white shadow-sm"
+                      : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-muted border border-border"
+                  }`}
                 >
                   {CATEGORY_LABELS[cat]}
-                </Button>
+                </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Developer Name</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">Developer Name</label>
             <Input
               placeholder="Your name or company"
-              className="bg-secondary border-border"
+              className="bg-secondary border-border rounded-xl focus-visible:ring-primary/50"
               value={formData.developer_name}
               onChange={(e) => update("developer_name", e.target.value)}
               maxLength={100}
@@ -106,11 +121,11 @@ const DeveloperPage = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Prompt Template</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">Prompt Template</label>
             <Textarea
               placeholder="The system prompt for your agent. Use {input} as placeholder for user input."
-              className="bg-secondary border-border resize-none"
-              rows={4}
+              className="bg-secondary border-border resize-none rounded-xl focus-visible:ring-primary/50 font-mono text-sm"
+              rows={5}
               value={formData.prompt_template}
               onChange={(e) => update("prompt_template", e.target.value)}
               maxLength={2000}
@@ -118,10 +133,12 @@ const DeveloperPage = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Demo Example (optional)</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">
+              Demo Example <span className="text-muted-foreground font-normal">(optional)</span>
+            </label>
             <Input
               placeholder="Example prompt users can try"
-              className="bg-secondary border-border"
+              className="bg-secondary border-border rounded-xl focus-visible:ring-primary/50"
               value={formData.demo_example}
               onChange={(e) => update("demo_example", e.target.value)}
               maxLength={500}
@@ -129,8 +146,8 @@ const DeveloperPage = () => {
           </div>
         </div>
 
-        <Button type="submit" size="lg" className="gradient-bg border-0 text-primary-foreground hover:opacity-90">
-          <Plus size={18} className="mr-2" /> Submit Agent
+        <Button type="submit" size="lg" className="rounded-full gradient-bg border-0 text-white hover:opacity-90 font-semibold px-8 shadow-lg shadow-primary/20">
+          <Plus size={17} className="mr-2" /> Submit Agent
         </Button>
       </form>
     </div>
